@@ -16,7 +16,7 @@ import java.util.Date;
 public class project2
 {
     public static void main( String[] args )
-    {
+    {   	
     	TransactionNumberMethod TransactionNumber = new TransactionNumberMethod( "" );
     	
     	//create accounts
@@ -37,7 +37,7 @@ public class project2
         
         for( int i = 0; i < 10; i++ )
         {
-        	executor.execute( new WithdrawalAgent( accounts[ random.nextInt( accounts.length ) ] ) );
+        	executor.execute( new WithdrawalAgent( accounts ) );
         }
         
         /*for (int i = 0; i < 2; i++)
@@ -82,6 +82,7 @@ class DepositorAgent implements Runnable
 			
 			finally
 			{
+				account.sufficientAmountForWithdraw.signalAll();
 				account.AccountLock.unlock();
 			}
             
@@ -100,17 +101,64 @@ class DepositorAgent implements Runnable
 //----------------------------------------------------------------------------------------
 class WithdrawalAgent implements Runnable
 {
+	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public WithdrawalAgent(BankAccount bankAccount)
+	public WithdrawalAgent( BankAccount[] accounts )
 	{
-		// TODO Auto-generated constructor stub
+		this.accountArray = accounts;
 	}
 
 	@Override
 	public void run()
 	{
-		//
+		while( true )
+		{
+			BankAccount account = accountArray[ rand.nextInt( accountArray.length ) ];
+
+			int withdrawAmount = rand.nextInt(98) + 1;
+			
+			//WILL WAIT TF HERE UNITL LOCK AVAIL
+			account.AccountLock.lock();
+			
+			try
+			{
+				/*while( account.balance < withdrawAmount )
+				{
+					//wait
+				}*/
+				
+				while( account.balance < withdrawAmount )
+				{
+					try
+					{
+						account.sufficientAmountForWithdraw.await();
+					}
+					
+					catch( InterruptedException e )
+					{
+						e.printStackTrace();
+					}
+				}
+				
+				account.withdraw( withdrawAmount );
+			}
+			
+			finally
+			{
+				account.AccountLock.unlock();
+			}
+            
+            try
+            {
+                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+            }
+            
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+		}
 	}
 }
 //----------------------------------------------------------------------------------------
@@ -125,7 +173,7 @@ class TransferAgent implements Runnable
 	@Override
 	public void run()
 	{
-		//
+		
 	}
 }
 //----------------------------------------------------------------------------------------
@@ -155,12 +203,19 @@ class BankAccount
 	int balance;
 	
 	ReentrantLock AccountLock = new ReentrantLock();
+	Condition sufficientAmountForWithdraw = AccountLock.newCondition();
 	
     public BankAccount( String name, int initBal, TransactionNumberMethod trs )
     {
 		this.accountNumber = name;
 		this.balance = initBal;
 		this.TransactionCounter = trs;
+	}
+
+	public void withdraw( int withdraw )
+	{
+		this.balance = this.balance - withdraw;	
+		System.out.println( "Withdraw of $" + withdraw + " in account " + accountNumber + " in transaction " + TransactionCounter.TransactionNumberMethod()  );
 	}
 
 	public void deposit( int deposit )
