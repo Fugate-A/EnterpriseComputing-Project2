@@ -32,24 +32,24 @@ public class project2
         //start thread of depositor with random account
         for( int i = 0; i < 5; i++ )
         {
-        	executor.execute( new DepositorAgent( accounts, i ) );
+        	executor.execute( new DepositorAgent( accounts, i+1 ) );
         }
         
         for( int i = 0; i < 10; i++ )
         {
-        	executor.execute( new WithdrawalAgent( accounts, i ) );
+        	executor.execute( new WithdrawalAgent( accounts, i+1 ) );
         }
         
         for( int i = 0; i < 2; i++ )
         {
-            executor.execute( new TransferAgent( accounts, i ) );
+            executor.execute( new TransferAgent( accounts, i+1 ) );
         }
         
-        //executor.execute( new InternalAuditAgent ( accounts ) );
+        executor.execute( new InternalAuditAgent ( accounts, 18 ) );
         
-        //executor.execute( new TreasuryAgent ( accounts ) );
+        executor.execute( new TreasuryAgent ( accounts, 19 ) );
 
-        //executor.shutdown();
+        executor.shutdown();
     }
 }
 //----------------------------------------------------------------------------------------
@@ -261,7 +261,53 @@ class InternalAuditAgent implements Runnable
 	@Override
 	public void run()
 	{
-		//
+		while( true )
+		{
+			BankAccount account1 = accountArray[ 0 ];
+			BankAccount account2 = accountArray[ 1 ];
+			
+			boolean lockAccount1 = false;
+            boolean lockAccount2 = false;
+			
+            try
+            {
+                lockAccount1 = account1.AccountLock.tryLock();
+                lockAccount2 = account2.AccountLock.tryLock();
+
+                if( lockAccount1 && lockAccount2 )
+                {
+                	System.out.println("***AUDITING***\tCurrent Balances: " + account1.accountNumber + ": $" + account1.balance + " - " + account2.accountNumber + ": $" + account2.balance );
+                }
+                
+                else
+                {
+                	System.out.println("Audit Failed - try again later");
+                }
+            }
+            
+            finally
+            {
+	        	if( lockAccount1 )
+	        	{
+	        		account1.AccountLock.unlock();
+	        	}
+	        	
+	        	if( lockAccount2 )
+	        	{
+	        		account2.AccountLock.unlock();
+	        	}
+            }
+				
+            try
+            {
+                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+            }
+            
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+		}
 	}
 }
 //----------------------------------------------------------------------------------------
@@ -280,7 +326,53 @@ class TreasuryAgent implements Runnable
 	@Override
 	public void run()
 	{
-		//
+		while( true )
+		{
+			BankAccount account1 = accountArray[ 0 ];
+			BankAccount account2 = accountArray[ 1 ];
+			
+			boolean lockAccount1 = false;
+            boolean lockAccount2 = false;
+			
+            try
+            {
+                lockAccount1 = account1.AccountLock.tryLock();
+                lockAccount2 = account2.AccountLock.tryLock();
+
+                if( lockAccount1 && lockAccount2 )
+                {
+                	System.out.println("***IRS Audit***\tCurrent Balances: " + account1.accountNumber + ": $" + account1.balance + " - " + account2.accountNumber + ": $" + account2.balance );
+                }
+                
+                else
+                {
+                	System.out.println("Audit Failed - We're onto you like Capone!");
+                }
+            }
+            
+            finally
+            {
+	        	if( lockAccount1 )
+	        	{
+	        		account1.AccountLock.unlock();
+	        	}
+	        	
+	        	if( lockAccount2 )
+	        	{
+	        		account2.AccountLock.unlock();
+	        	}
+            }
+				
+            try
+            {
+                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+            }
+            
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+		}
 	}
 }
 //----------------------------------------------------------------------------------------
