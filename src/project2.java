@@ -32,18 +32,18 @@ public class project2
         //start thread of depositor with random account
         for( int i = 0; i < 5; i++ )
         {
-        	executor.execute( new DepositorAgent( accounts ) );
+        	executor.execute( new DepositorAgent( accounts, i ) );
         }
         
         for( int i = 0; i < 10; i++ )
         {
-        	executor.execute( new WithdrawalAgent( accounts ) );
+        	executor.execute( new WithdrawalAgent( accounts, i ) );
         }
         
-        /*for (int i = 0; i < 2; i++)
+        for( int i = 0; i < 2; i++ )
         {
-            executor.execute( new TransferAgent( accounts[0], accounts[1] ) );
-        }*/
+            executor.execute( new TransferAgent( accounts, i ) );
+        }
         
         //executor.execute( new InternalAuditAgent ( accounts ) );
         
@@ -55,12 +55,14 @@ public class project2
 //----------------------------------------------------------------------------------------
 class DepositorAgent implements Runnable
 {
+	int ThreadName;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public DepositorAgent( BankAccount[] accounts )
+	public DepositorAgent( BankAccount[] accounts, int threadNumber )
 	{
 		this.accountArray = accounts;
+		this.ThreadName = threadNumber;
 	}
 
 	@Override
@@ -88,7 +90,7 @@ class DepositorAgent implements Runnable
             
             try
             {
-                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+                Thread.sleep( rand.nextInt( 1000 ) );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -101,12 +103,14 @@ class DepositorAgent implements Runnable
 //----------------------------------------------------------------------------------------
 class WithdrawalAgent implements Runnable
 {
+	int ThreadName;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public WithdrawalAgent( BankAccount[] accounts )
+	public WithdrawalAgent( BankAccount[] accounts, int threadNumber )
 	{
 		this.accountArray = accounts;
+		this.ThreadName = threadNumber;
 	}
 
 	@Override
@@ -123,15 +127,11 @@ class WithdrawalAgent implements Runnable
 			
 			try
 			{
-				/*while( account.balance < withdrawAmount )
-				{
-					//wait
-				}*/
-				
 				while( account.balance < withdrawAmount )
 				{
 					try
 					{
+						System.out.println("not enough money to take");
 						account.sufficientAmountForWithdraw.await();
 					}
 					
@@ -164,21 +164,100 @@ class WithdrawalAgent implements Runnable
 //----------------------------------------------------------------------------------------
 class TransferAgent implements Runnable
 {
+	int ThreadName;
+	BankAccount[] accountArray;
+	private Random rand = new Random();
 	
-	public TransferAgent( BankAccount account1, BankAccount account2 )
+	public TransferAgent( BankAccount[] accounts, int threadNumber )
 	{
-		//
+		this.accountArray = accounts;
+		this.ThreadName = threadNumber;
 	}
 
 	@Override
 	public void run()
 	{
-		
+		while( true )
+		{
+			BankAccount accountTo = accountArray[ rand.nextInt( accountArray.length ) ];
+			BankAccount accountFrom = accountArray[0];
+			
+			if( accountFrom.equals( accountTo ) )
+			{
+				accountFrom = accountArray[1];
+			}
+
+			int transferAmount = rand.nextInt(988) + 1;
+			
+			boolean lockAccountTo = false;
+            boolean lockAccountFrom = false;
+			
+            try
+            {
+                // Try to lock both accounts, no blocking
+                lockAccountTo = accountTo.AccountLock.tryLock();
+                lockAccountFrom = accountFrom.AccountLock.tryLock();
+
+                if( lockAccountTo && lockAccountFrom )
+                {
+                	if( accountFrom.balance < transferAmount )
+        			{
+        				System.out.println("!!!!ABORTION!!!!");
+        			}
+        			
+        			else
+        			{
+        				accountFrom.balance = accountFrom.balance - transferAmount;
+        				accountTo.balance = accountTo.balance + transferAmount;
+        				
+        				System.out.println("Transfer of $" + transferAmount + " from " + accountFrom.accountNumber + " to " + accountTo.accountNumber + " in transaction " + accountTo.TransactionCounter.TransactionNumberMethod() );
+        			}
+                }
+                
+                else
+                {
+                	System.out.println("Trying Transfer Later - NO MONEYS BROKE BOI");
+                }
+            }
+            
+            finally
+            {
+	        	if( lockAccountTo )
+	        	{
+	        		accountTo.AccountLock.unlock();
+	        	}
+	        	
+	        	if( lockAccountFrom )
+	        	{
+	        		accountFrom.AccountLock.unlock();
+	        	}
+            }
+				
+            try
+            {
+                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+            }
+            
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+		}
 	}
 }
 //----------------------------------------------------------------------------------------
 class InternalAuditAgent implements Runnable
 {
+	int ThreadName;
+	BankAccount[] accountArray;
+	private Random rand = new Random();
+	
+	public InternalAuditAgent( BankAccount[] accounts, int threadNumber )
+	{
+		this.accountArray = accounts;
+		this.ThreadName = threadNumber;
+	}
+	
 	@Override
 	public void run()
 	{
@@ -188,6 +267,16 @@ class InternalAuditAgent implements Runnable
 //----------------------------------------------------------------------------------------
 class TreasuryAgent implements Runnable
 {
+	int ThreadName;
+	BankAccount[] accountArray;
+	private Random rand = new Random();
+	
+	public TreasuryAgent( BankAccount[] accounts, int threadNumber )
+	{
+		this.accountArray = accounts;
+		this.ThreadName = threadNumber;
+	}
+	
 	@Override
 	public void run()
 	{
