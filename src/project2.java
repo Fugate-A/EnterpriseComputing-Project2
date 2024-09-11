@@ -28,26 +28,35 @@ public class project2
         ExecutorService executor = Executors.newFixedThreadPool( 19 );
       
         Random random = new Random();
+        
+        //sleep time defined here for convienence
+        //more is longer
+        //fastest to slowest: with - depo - transfer - internal - IRS
+        int WithdrawalAgentSleepTime = 100;
+        int DepositorAgentSleepTime = 1000;
+        int TransferAgentSleepTime = 5000;
+        int InternalAuditAgentSleepTime = 10000;
+        int TreasuryAgentSleepTime = 10500;
 
         //start thread of depositor with random account
         for( int i = 0; i < 5; i++ )
         {
-        	executor.execute( new DepositorAgent( accounts, i+1 ) );
+        	executor.execute( new DepositorAgent( accounts, i+1, DepositorAgentSleepTime ) );
         }
         
         for( int i = 0; i < 10; i++ )
         {
-        	executor.execute( new WithdrawalAgent( accounts, i+1 ) );
+        	executor.execute( new WithdrawalAgent( accounts, i+1, WithdrawalAgentSleepTime ) );
         }
         
         for( int i = 0; i < 2; i++ )
         {
-            executor.execute( new TransferAgent( accounts, i+1 ) );
+            executor.execute( new TransferAgent( accounts, i+1, TransferAgentSleepTime ) );
         }
         
-        executor.execute( new InternalAuditAgent ( accounts, 18 ) );
+        executor.execute( new InternalAuditAgent ( accounts, 18, InternalAuditAgentSleepTime ) );
         
-        executor.execute( new TreasuryAgent ( accounts, 19 ) );
+        executor.execute( new TreasuryAgent ( accounts, 19, TreasuryAgentSleepTime ) );
 
         executor.shutdown();
     }
@@ -56,13 +65,15 @@ public class project2
 class DepositorAgent implements Runnable
 {
 	int ThreadName;
+	int DepoSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public DepositorAgent( BankAccount[] accounts, int threadNumber )
+	public DepositorAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
 		this.ThreadName = threadNumber;
+		this.DepoSleep = sleepTime;
 	}
 
 	@Override
@@ -90,7 +101,7 @@ class DepositorAgent implements Runnable
             
             try
             {
-                Thread.sleep( rand.nextInt( 1000 ) );  // Random sleep time
+                Thread.sleep( rand.nextInt( DepoSleep ) );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -104,13 +115,15 @@ class DepositorAgent implements Runnable
 class WithdrawalAgent implements Runnable
 {
 	int ThreadName;
+	int WithSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public WithdrawalAgent( BankAccount[] accounts, int threadNumber )
+	public WithdrawalAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
 		this.ThreadName = threadNumber;
+		this.WithSleep = sleepTime;
 	}
 
 	@Override
@@ -151,7 +164,7 @@ class WithdrawalAgent implements Runnable
             
             try
             {
-                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+                Thread.sleep(rand.nextInt(WithSleep));  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -165,13 +178,15 @@ class WithdrawalAgent implements Runnable
 class TransferAgent implements Runnable
 {
 	int ThreadName;
+	int TransSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public TransferAgent( BankAccount[] accounts, int threadNumber )
+	public TransferAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
 		this.ThreadName = threadNumber;
+		this.TransSleep = sleepTime;
 	}
 
 	@Override
@@ -235,7 +250,7 @@ class TransferAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+                Thread.sleep(rand.nextInt(TransSleep));  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -249,13 +264,15 @@ class TransferAgent implements Runnable
 class InternalAuditAgent implements Runnable
 {
 	int ThreadName;
+	int IntAuditSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public InternalAuditAgent( BankAccount[] accounts, int threadNumber )
+	public InternalAuditAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
 		this.ThreadName = threadNumber;
+		this.IntAuditSleep = sleepTime;
 	}
 	
 	@Override
@@ -300,7 +317,7 @@ class InternalAuditAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+                Thread.sleep(rand.nextInt(IntAuditSleep));  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -314,13 +331,15 @@ class InternalAuditAgent implements Runnable
 class TreasuryAgent implements Runnable
 {
 	int ThreadName;
+	int TreasSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
-	public TreasuryAgent( BankAccount[] accounts, int threadNumber )
+	public TreasuryAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
 		this.ThreadName = threadNumber;
+		this.TreasSleep = sleepTime;
 	}
 	
 	@Override
@@ -365,7 +384,7 @@ class TreasuryAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(1000));  // Random sleep time
+                Thread.sleep(rand.nextInt(TreasSleep));  // Random sleep time
             }
             
             catch (InterruptedException e)
