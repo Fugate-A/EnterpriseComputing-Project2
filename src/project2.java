@@ -101,7 +101,7 @@ class DepositorAgent implements Runnable
             
             try
             {
-                Thread.sleep( rand.nextInt( DepoSleep ) );  // Random sleep time
+                Thread.sleep( rand.nextInt( DepoSleep ) + 1 );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -164,7 +164,7 @@ class WithdrawalAgent implements Runnable
             
             try
             {
-                Thread.sleep(rand.nextInt(WithSleep));  // Random sleep time
+                Thread.sleep(rand.nextInt( WithSleep ) + 1 );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -250,7 +250,7 @@ class TransferAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(TransSleep));  // Random sleep time
+                Thread.sleep(rand.nextInt( TransSleep ) + 1 );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -317,7 +317,7 @@ class InternalAuditAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(IntAuditSleep));  // Random sleep time
+                Thread.sleep(rand.nextInt( IntAuditSleep ) + 1 );  // Random sleep time
             }
             
             catch (InterruptedException e)
@@ -384,7 +384,7 @@ class TreasuryAgent implements Runnable
 				
             try
             {
-                Thread.sleep(rand.nextInt(TreasSleep));  // Random sleep time
+                Thread.sleep(rand.nextInt( TreasSleep ) + 1 );  // Random sleep time
             }
             
             catch (InterruptedException e)
