@@ -37,6 +37,10 @@ public class project2
         int TransferAgentSleepTime = 5000;
         int InternalAuditAgentSleepTime = 10000;
         int TreasuryAgentSleepTime = 10500;
+        
+        System.out.println( "\t\t\t\t* * * SIMULATION BEGINNING * * *\n" );
+        System.out.println( "Deposit Agents:\t\tWithdrawal Agents:\t\t\tBalances:\t\tTransaction Number:" );
+        System.out.println( "_______________\t\t__________________\t\t\t_________\t\t___________________" );
 
         //start thread of depositor with random account
         for( int i = 0; i < 5; i++ )
@@ -95,6 +99,10 @@ class DepositorAgent implements Runnable
 			
 			finally
 			{
+				System.out.println( "Agent DT" + ThreadName + " deposits $" + depositAmount + " into: JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
+									+ "\t\t\t(+) JA-" + account.accountNumber.substring( account.accountNumber.length() - 1) + " balance is $" + account.balance
+									+ "  \t\t" + account.TransactionCounter.TransactionNumberMethod() );
+				
 				account.sufficientAmountForWithdraw.signalAll();
 				account.AccountLock.unlock();
 			}
@@ -144,7 +152,13 @@ class WithdrawalAgent implements Runnable
 				{
 					try
 					{
-						System.out.println("not enough money to take");
+						//System.out.println("not enough money to take");
+						
+						System.out.println( "\t\tAgent WT" + ThreadName + " attempts to withdraw $" + withdrawAmount + " from JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
+						+ "\t****** WITHDRAWAL BLOCKED ******" 
+						+ "\n\t\t\t\t\t\t\t\t      !INSUFFICIENT FUNDS!"
+						+ "\n\t\t\t\t\t\t\t\t\tBalance only $" + account.balance + "\n" );
+						
 						account.sufficientAmountForWithdraw.await();
 					}
 					
@@ -159,6 +173,10 @@ class WithdrawalAgent implements Runnable
 			
 			finally
 			{
+				System.out.println( "\t\tAgent WT" + ThreadName + " withdraws $" + withdrawAmount + " from JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
+									+ "\t(-) JA-" + account.accountNumber.substring( account.accountNumber.length() - 1) + " balance is $" + account.balance
+									+ "  \t\t" + account.TransactionCounter.TransactionNumberMethod() );
+				
 				account.AccountLock.unlock();
 			}
             
@@ -202,7 +220,7 @@ class TransferAgent implements Runnable
 				accountFrom = accountArray[1];
 			}
 
-			int transferAmount = rand.nextInt(988) + 1;
+			int transferAmount = rand.nextInt(98) + 1;
 			
 			boolean lockAccountTo = false;
             boolean lockAccountFrom = false;
@@ -217,7 +235,9 @@ class TransferAgent implements Runnable
                 {
                 	if( accountFrom.balance < transferAmount )
         			{
-        				System.out.println("!!!!ABORTION!!!!");
+                		System.out.println( "\nTRANSFER-->Agent TR" + ThreadName + " attempts to transfer $" + transferAmount + " from JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1)
+    					+ "\n******TRANSFER BLOCKED******\n     INSUFFICIENT FUNDS\n  JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1) + " balance is only $" + accountFrom.balance + "\n" );
+        				
         			}
         			
         			else
@@ -225,13 +245,27 @@ class TransferAgent implements Runnable
         				accountFrom.balance = accountFrom.balance - transferAmount;
         				accountTo.balance = accountTo.balance + transferAmount;
         				
-        				System.out.println("Transfer of $" + transferAmount + " from " + accountFrom.accountNumber + " to " + accountTo.accountNumber + " in transaction " + accountTo.TransactionCounter.TransactionNumberMethod() );
+        				//System.out.println("Transfer of $" + transferAmount + " from " + accountFrom.accountNumber + " to " + accountTo.accountNumber + " in transaction " + accountTo.TransactionCounter.TransactionNumberMethod() );
+        				
+        				System.out.println( "\nTRANSFER-->Agent TR" + ThreadName + " transferring $" + transferAmount + " from JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1)
+        																											  + " to JA-" 	+ accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1)
+											+ " --> JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1) + " balance is now $" + accountFrom.balance + "\t\t" + + accountTo.TransactionCounter.TransactionNumberMethod()
+											+ "\nTRANSFER COMPLETE\t\t\t\t\t   JA-" + accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1) + " balance is now $" + accountTo.balance + "\n" );
         			}
                 }
                 
                 else
                 {
-                	System.out.println("Trying Transfer Later - NO MONEYS BROKE BOI");
+                	//System.out.println("Trying Transfer Later - NO MONEYS BROKE BOI");
+                	if( !lockAccountTo )
+                	{
+                		System.out.println("******TRANSFER ABORTED******\t JA-" + accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1) + " is unavailable" );
+                	}
+                	
+                	else
+                	{
+                		System.out.println("******TRANSFER ABORTED******\t JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1) + " is unavailable" );
+                	}
                 }
             }
             
@@ -415,23 +449,24 @@ class BankAccount
 	public void withdraw( int withdraw )
 	{
 		this.balance = this.balance - withdraw;	
-		System.out.println( "Withdraw of $" + withdraw + " in account " + accountNumber + " in transaction " + TransactionCounter.TransactionNumberMethod()  );
+		//System.out.println( "Withdraw of $" + withdraw + " in account " + accountNumber + " in transaction " + TransactionCounter.TransactionNumberMethod()  );
 	}
 
 	public void deposit( int deposit )
 	{
 		this.balance = this.balance + deposit;
-		System.out.println( "Deposit of $" + deposit + " in account " + accountNumber + " in transaction " + TransactionCounter.TransactionNumberMethod()  );
+		//System.out.println( "Deposit of $" + deposit + " in account " + accountNumber + " in transaction " + TransactionCounter.TransactionNumberMethod()  );
 	} 
 }
 //----------------------------------------------------------------------------------------
 class TransactionNumberMethod
 {
-	int transactionNumber = 0;
+	int transactionNumber = 1;
 	
 	public TransactionNumberMethod( String init )
 	{
 		//init the counter without increment
+		transactionNumber = transactionNumber - 1;
 	}
 
 	public int TransactionNumberMethod()
