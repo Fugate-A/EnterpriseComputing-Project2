@@ -11,6 +11,10 @@ import java.util.Random;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 //----------------------------------------------------------------------------------------
 public class project2
@@ -73,6 +77,8 @@ class DepositorAgent implements Runnable
 	BankAccount[] accountArray;
 	private Random rand = new Random();
 	
+	CSVwrite flagCSV = new CSVwrite();
+	
 	public DepositorAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
 		this.accountArray = accounts;
@@ -99,9 +105,16 @@ class DepositorAgent implements Runnable
 			
 			finally
 			{
+				int transNum = account.TransactionCounter.TransactionNumberMethod();
+				
 				System.out.println( "Agent DT" + ThreadName + " deposits $" + depositAmount + " into: JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
 									+ "\t\t\t(+) JA-" + account.accountNumber.substring( account.accountNumber.length() - 1) + " balance is $" + account.balance
-									+ "  \t\t" + account.TransactionCounter.TransactionNumberMethod() );
+									+ "  \t\t" + transNum );
+				
+				if( depositAmount >= 450 )
+				{
+					flagCSV.flagCSV( "Agent DT", ThreadName, "deposit", depositAmount, transNum );
+				}
 				
 				account.sufficientAmountForWithdraw.signalAll();
 				account.AccountLock.unlock();
@@ -126,6 +139,8 @@ class WithdrawalAgent implements Runnable
 	int WithSleep;
 	BankAccount[] accountArray;
 	private Random rand = new Random();
+	
+	CSVwrite flagCSV = new CSVwrite();
 	
 	public WithdrawalAgent( BankAccount[] accounts, int threadNumber, int sleepTime )
 	{
@@ -173,9 +188,16 @@ class WithdrawalAgent implements Runnable
 			
 			finally
 			{
+				int transNum = account.TransactionCounter.TransactionNumberMethod();
+				
 				System.out.println( "\t\tAgent WT" + ThreadName + " withdraws $" + withdrawAmount + " from JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
 									+ "\t(-) JA-" + account.accountNumber.substring( account.accountNumber.length() - 1) + " balance is $" + account.balance
-									+ "  \t\t" + account.TransactionCounter.TransactionNumberMethod() );
+									+ "  \t\t" + transNum );
+				
+				if( withdrawAmount >= 90 )
+				{
+					flagCSV.flagCSV( "Agent WT", ThreadName, "withdrawal", withdrawAmount, transNum );
+				}
 				
 				account.AccountLock.unlock();
 			}
@@ -477,5 +499,30 @@ class TransactionNumberMethod
 	}
 }
 //----------------------------------------------------------------------------------------
-
+class CSVwrite
+{
+	void flagCSV( String Agent, int agentNum, String typeOf, int amount, int transNum )
+	{
+		String CSVout = null;
+		String date = null;
+	
+		System.out.println( "***Flagged Transaction***" + Agent + agentNum + " made a " + typeOf + " in excess of $" + amount + ".00 USD - See Flagged Transaction Log." );
+		
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern( "MM/dd/yyyy HH:mm:ss z" );
+        date = now.atZone(ZoneId.systemDefault()).format(outputFormatter);
+        
+		CSVout = Agent + agentNum + " issued " + typeOf + "\t of $" + amount + ".00\tat:" + date + "\tTransaction Number : " + transNum;
+		
+		try( FileWriter writer = new FileWriter( "transactions.csv", true ) )
+		{
+	        writer.write( CSVout + "\n" );
+        }
+		
+		catch( IOException e )
+		{
+            e.printStackTrace();
+        }
+	}
+}
 //----------------------------------------------------------------------------------------
