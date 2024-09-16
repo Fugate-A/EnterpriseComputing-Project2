@@ -8,8 +8,11 @@
 import java.util.concurrent.locks.*;
 import java.util.concurrent.*;
 import java.util.Random;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,7 +23,20 @@ import java.util.Date;
 public class project2
 {
     public static void main( String[] args )
-    {   	
+    {   
+    	
+    	try
+    	{
+    		FileOutputStream consoleFile = new FileOutputStream( "ConsoleOutputOfSim.txt" );
+    		redir red = new redir( System.out, new PrintStream( consoleFile ) );
+    		System.setOut( red );
+    	}
+    	
+    	catch( FileNotFoundException e )
+    	{
+    		System.out.println( "Error in console redirect file" );
+    	}
+    	
     	TransactionNumberMethod TransactionNumber = new TransactionNumberMethod( "" );
     	
     	//create accounts
@@ -68,6 +84,31 @@ public class project2
 
         executor.shutdown();
     }
+}
+//----------------------------------------------------------------------------------------
+class redir extends PrintStream
+{
+	PrintStream redir;
+	
+	public redir( PrintStream sys, PrintStream file )
+	{
+		super( sys );
+		redir = file;
+	}
+	
+	@Override
+	public void println( String out )
+	{
+		super.println( out );
+		redir.println(out);
+	}
+	
+	@Override
+	public void close()
+	{
+		super.close();
+		redir.close();
+	}
 }
 //----------------------------------------------------------------------------------------
 class DepositorAgent implements Runnable
@@ -339,6 +380,8 @@ class InternalAuditAgent implements Runnable
 			BankAccount account1 = accountArray[ 0 ];
 			BankAccount account2 = accountArray[ 1 ];
 			
+			//account1.TransactionCounter.BankAuditCall();
+			
 			boolean lockAccount1 = false;
             boolean lockAccount2 = false;
 			
@@ -349,12 +392,22 @@ class InternalAuditAgent implements Runnable
 
                 if( lockAccount1 && lockAccount2 )
                 {
-                	System.out.println("***AUDITING***\tCurrent Balances: " + account1.accountNumber + ": $" + account1.balance + " - " + account2.accountNumber + ": $" + account2.balance );
+                	System.out.println("**************************************************************************"
+                						+ "\nInternal Bank Audit Beginning...\n"
+                						+ "\tThe total number of transactions since last Internal Audit is: " + account1.TransactionCounter.BankAuditDiff()
+                						+ "\n\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: " + account1.balance
+                						+ "\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: " + account2.balance
+                						+ "\n\n\nInternal Bank Audit Complete.\n"
+                						+ "**************************************************************************");
+                	
+                	account1.TransactionCounter.BankAuditCall();
                 }
                 
                 else
                 {
-                	System.out.println("Audit Failed - try again later");
+                	System.out.println("**************************************************************************"
+                						+ "\nAudit Failed - try again later\n"
+                						+ "**************************************************************************\n");
                 }
             }
             
@@ -485,10 +538,22 @@ class TransactionNumberMethod
 {
 	int transactionNumber = 1;
 	
+	int BankAuditLastTrans = 0;
+	
 	public TransactionNumberMethod( String init )
 	{
 		//init the counter without increment
 		transactionNumber = transactionNumber - 1;
+	}
+
+	public int BankAuditDiff()
+	{
+		return transactionNumber - BankAuditLastTrans;
+	}
+
+	public void BankAuditCall()
+	{
+		BankAuditLastTrans = transactionNumber;
 	}
 
 	public int TransactionNumberMethod()
