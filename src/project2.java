@@ -52,11 +52,11 @@ public class project2
         //sleep time defined here for convienence
         //more is longer
         //fastest to slowest: with - depo - transfer - internal - IRS
-        int WithdrawalAgentSleepTime = 100;
-        int DepositorAgentSleepTime = 1000;
+        int WithdrawalAgentSleepTime = 500;
+        int DepositorAgentSleepTime = 1500;
         int TransferAgentSleepTime = 5000;
-        int InternalAuditAgentSleepTime = 10000;
-        int TreasuryAgentSleepTime = 10500;
+        int InternalAuditAgentSleepTime = 15000;
+        int TreasuryAgentSleepTime = 20000;
         
         System.out.println( "\t\t\t\t* * * SIMULATION BEGINNING * * *\n" );
         System.out.println( "Deposit Agents:\t\tWithdrawal Agents:\t\t\tBalances:\t\tTransaction Number:" );
@@ -100,7 +100,7 @@ class redir extends PrintStream
 	public void println( String out )
 	{
 		super.println( out );
-		redir.println(out);
+		redir.println( out );
 	}
 	
 	@Override
@@ -213,7 +213,7 @@ class WithdrawalAgent implements Runnable
 						System.out.println( "\t\tAgent WT" + ThreadName + " attempts to withdraw $" + withdrawAmount + " from JA-" + account.accountNumber.substring( account.accountNumber.length() - 1)
 						+ "\t****** WITHDRAWAL BLOCKED ******" 
 						+ "\n\t\t\t\t\t\t\t\t      !INSUFFICIENT FUNDS!"
-						+ "\n\t\t\t\t\t\t\t\t\tBalance only $" + account.balance + "\n" );
+						+ "\n\t\t\t\t\t\t\t\t\tBalance only $" + account.balance );
 						
 						account.sufficientAmountForWithdraw.await();
 					}
@@ -273,6 +273,16 @@ class TransferAgent implements Runnable
 	@Override
 	public void run()
 	{
+		try
+        {
+            Thread.sleep( 1000 );
+        }
+        
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+		
 		while( true )
 		{
 			BankAccount accountTo = accountArray[ rand.nextInt( accountArray.length ) ];
@@ -317,7 +327,7 @@ class TransferAgent implements Runnable
         			}
                 }
                 
-                else
+                /*else
                 {
                 	//System.out.println("Trying Transfer Later - NO MONEYS BROKE BOI");
                 	if( !lockAccountTo )
@@ -329,7 +339,7 @@ class TransferAgent implements Runnable
                 	{
                 		System.out.println("******TRANSFER ABORTED******\t JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1) + " is unavailable" );
                 	}
-                }
+                }*/
             }
             
             finally
@@ -375,6 +385,16 @@ class InternalAuditAgent implements Runnable
 	@Override
 	public void run()
 	{
+		try
+        {
+            Thread.sleep( 1000 );
+        }
+        
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+		
 		while( true )
 		{
 			BankAccount account1 = accountArray[ 0 ];
@@ -392,23 +412,23 @@ class InternalAuditAgent implements Runnable
 
                 if( lockAccount1 && lockAccount2 )
                 {
-                	System.out.println("**************************************************************************"
+                	System.out.println("**************************************************************************************"
                 						+ "\nInternal Bank Audit Beginning...\n"
                 						+ "\tThe total number of transactions since last Internal Audit is: " + account1.TransactionCounter.BankAuditDiff()
                 						+ "\n\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: " + account1.balance
                 						+ "\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: " + account2.balance
                 						+ "\n\n\nInternal Bank Audit Complete.\n"
-                						+ "**************************************************************************");
+                						+ "**************************************************************************************");
                 	
                 	account1.TransactionCounter.BankAuditCall();
                 }
                 
-                else
+                /*else
                 {
                 	System.out.println("**************************************************************************"
-                					+  "\nAudit Failed - try again later\n"
+                					+  "\nInternal Audit Failed - trying again later\n"
                 					+  "**************************************************************************\n");
-                }
+                }*/
             }
             
             finally
@@ -454,6 +474,16 @@ class TreasuryAgent implements Runnable
 	@Override
 	public void run()
 	{
+		try
+        {
+            Thread.sleep( 1000 );
+        }
+        
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+		
 		while( true )
 		{
 			BankAccount account1 = accountArray[ 0 ];
@@ -469,13 +499,25 @@ class TreasuryAgent implements Runnable
 
                 if( lockAccount1 && lockAccount2 )
                 {
-                	System.out.println("***IRS Audit***\tCurrent Balances: " + account1.accountNumber + ": $" + account1.balance + " - " + account2.accountNumber + ": $" + account2.balance );
+                	//System.out.println("***IRS Audit***\tCurrent Balances: " + account1.accountNumber + ": $" + account1.balance + " - " + account2.accountNumber + ": $" + account2.balance );
+                	
+                	System.out.println("**************************************************************************************"
+			    					 + "\nUNITED STATES DEPARTMENT OF THE TREASURY - Bank Audit Beginning...\n"
+			    				    +  "\tThe total number of transactions since last Treasury Department Audit is: " + account1.TransactionCounter.TreasAuditDiff()
+			    					+  "\n\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: " + account1.balance
+			    					+  "\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: " + account2.balance
+			    					+  "\n\n\nTreasury Department Audit Complete.\n"
+			    					+  "**************************************************************************************");
                 }
                 
-                else
+                /*else
                 {
-                	System.out.println("Audit Failed - We're onto you like Capone!");
-                }
+                	//System.out.println("Audit Failed - We're onto you like Capone!");
+
+                	System.out.println("**************************************************************************"
+        							+  "\nTreasury Audit Failed - trying again later\n"
+        							+  "**************************************************************************\n");
+                }*/
             }
             
             finally
@@ -539,6 +581,7 @@ class TransactionNumberMethod
 	int transactionNumber = 1;
 	
 	int BankAuditLastTrans = 0;
+	int TreasAuditLastTrans = 0;
 	
 	public TransactionNumberMethod( String init )
 	{
@@ -551,9 +594,19 @@ class TransactionNumberMethod
 		return transactionNumber - BankAuditLastTrans;
 	}
 
-	public void BankAuditCall()
+	public void TreasAuditCall()
 	{
 		BankAuditLastTrans = transactionNumber;
+	}
+
+	public int TreasAuditDiff()
+	{
+		return transactionNumber - TreasAuditLastTrans;
+	}
+
+	public void BankAuditCall()
+	{
+		TreasAuditLastTrans = transactionNumber;
 	}
 
 	public int TransactionNumberMethod()
@@ -570,6 +623,16 @@ class CSVwrite
 	{
 		String CSVout = null;
 		String date = null;
+		
+		if( amount > 150 )
+		{
+			amount = 450;
+		}
+		
+		else
+		{
+			amount = 90;
+		}
 	
 		System.out.println( "***Flagged Transaction***" + Agent + agentNum + " made a " + typeOf + " in excess of $" + amount + ".00 USD - See Flagged Transaction Log." );
 		
