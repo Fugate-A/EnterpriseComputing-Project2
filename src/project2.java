@@ -52,7 +52,7 @@ public class project2
         //sleep time defined here for convienence
         //more is longer
         //fastest to slowest: with - depo - transfer - internal - IRS
-        int WithdrawalAgentSleepTime = 500;
+        int WithdrawalAgentSleepTime = 200;
         int DepositorAgentSleepTime = 1500;
         int TransferAgentSleepTime = 5000;
         int InternalAuditAgentSleepTime = 15000;
@@ -323,7 +323,7 @@ class TransferAgent implements Runnable
         				System.out.println( "\nTRANSFER-->Agent TR" + ThreadName + " transferring $" + transferAmount + " from JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1)
         																											  + " to JA-" 	+ accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1)
 											+ " --> JA-" + accountFrom.accountNumber.substring( accountFrom.accountNumber.length() - 1) + " balance is now $" + accountFrom.balance + "\t\t" + + accountTo.TransactionCounter.TransactionNumberMethod()
-											+ "\nTRANSFER COMPLETE\t\t\t\t\t   JA-" + accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1) + " balance is now $" + accountTo.balance + "\n" );
+											+ "\nTRANSFER COMPLETE\t\t\t\t\t    JA-" + accountTo.accountNumber.substring( accountTo.accountNumber.length() - 1) + " balance is now $" + accountTo.balance + "\n" );
         			}
                 }
                 
@@ -415,8 +415,8 @@ class InternalAuditAgent implements Runnable
                 	System.out.println("**************************************************************************************"
                 						+ "\nInternal Bank Audit Beginning...\n"
                 						+ "\tThe total number of transactions since last Internal Audit is: " + account1.TransactionCounter.BankAuditDiff()
-                						+ "\n\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: " + account1.balance
-                						+ "\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: " + account2.balance
+                						+ "\n\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: $" + account1.balance
+                						+ "\n\tINTERNAL BANK AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: $" + account2.balance
                 						+ "\n\n\nInternal Bank Audit Complete.\n"
                 						+ "**************************************************************************************");
                 	
@@ -504,10 +504,12 @@ class TreasuryAgent implements Runnable
                 	System.out.println("**************************************************************************************"
 			    					 + "\nUNITED STATES DEPARTMENT OF THE TREASURY - Bank Audit Beginning...\n"
 			    				    +  "\tThe total number of transactions since last Treasury Department Audit is: " + account1.TransactionCounter.TreasAuditDiff()
-			    					+  "\n\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: " + account1.balance
-			    					+  "\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: " + account2.balance
+			    					+  "\n\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-1 TO BE: $" + account1.balance
+			    					+  "\n\tTREASURY DEPT AUDITOR FINDS CURRENT ACCOUNT BALANCE FOR JA-2 TO BE: $" + account2.balance
 			    					+  "\n\n\nTreasury Department Audit Complete.\n"
 			    					+  "**************************************************************************************");
+                
+                	account1.TransactionCounter.TreasAuditCall();
                 }
                 
                 /*else
@@ -596,7 +598,7 @@ class TransactionNumberMethod
 
 	public void TreasAuditCall()
 	{
-		BankAuditLastTrans = transactionNumber;
+		TreasAuditLastTrans = transactionNumber;
 	}
 
 	public int TreasAuditDiff()
@@ -606,7 +608,7 @@ class TransactionNumberMethod
 
 	public void BankAuditCall()
 	{
-		TreasAuditLastTrans = transactionNumber;
+		BankAuditLastTrans = transactionNumber;
 	}
 
 	public int TransactionNumberMethod()
